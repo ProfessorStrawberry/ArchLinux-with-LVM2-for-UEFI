@@ -44,7 +44,7 @@ create new partitions
 ```
 for EFI with GPT, boot needs to be fat32
 ```
->mkfs.fat -F32 /dev/sdX1 
+>mkfs.fat -F32 /dev/sdX1
 ```
 encryption setup
 ```
@@ -88,7 +88,7 @@ make a backup of mirrorlist and update sync pacman
 ```
 install base system
 ```
->pacstrap /mnt base base-devel linux linux-firmware lvm2 sudo vim git zsh networkmanager pacman-contrib reflector htop firefox
+>pacstrap /mnt base base-devel linux linux-firmware lvm2 sudo vim git wget zsh networkmanager pacman-contrib reflector htop firefox
 ```
 Generating an fstab file and change relatime on all non-boot partitions to noatime (reduces wear if using an SSD)
 
@@ -115,6 +115,19 @@ add a default user
 ```
 >useradd -m -g users -G wheel,storage,power -s /bin/zsh MYUSERNAME
 >passwd MYUSERNAME
+```
+
+create a sudoers.d file
+
+```
+>visudo -f /etc/sudoers.d/01_MYUSERNAME
+	##Override built-in defaults
+	#Defaults rootpw
+	Defaults insults
+	
+	##User specification
+	# root and users in group wheel can run anything on any machine as any user
+	MYUSERNAME ALL=(ALL) ALL
 ```
 
 adjust timezone
@@ -201,7 +214,7 @@ I have an Nvidia GTX 1080 Ti, so my latest drivers will just be nvidia. I also w
 ```
 
 We will also want to set nvidia drm kernel modules:
- 
+
 
 ```
 >vim /etc/mkinitcpio.conf
@@ -262,7 +275,7 @@ Installing X server display manager now install X, which is our display manager.
 ```
 
 Now we need to test if X runs. If you get a screen with a few terminals and a clock, it works! You  can type “exit” in the terminals to drop back to the command line.
- 
+
 
 ```
 >startx
@@ -270,7 +283,7 @@ Now we need to test if X runs. If you get a screen with a few terminals and a cl
 ```
 
 Installing a desktop manager
- 
+
 
 ```
 >sudo pacman -S plasma sddm
@@ -311,7 +324,7 @@ What the AUR is, is a collection of USER created packages for Arch  Linux users 
 Many AUR packages compile from source, so you will want to speed up  compile times. I have a few small tips for that as well. First, you will need to know the amount of cores your processor has, and will need to  know if your processor supports Hyperthreading or SMT. For example, if  you own an i7 4770k, you have 4 cores and support hyperthreading,  essentially giving you 8 cores. Ryzen 1700x 8 cores, 16 threads – counts as 16 cores. If your processor does NOT support SMT/hyperthreading,  such as an AMD FX-8350, you would just need to know the core number.  FX-8350 has 8 cores.
 
 First install ccache:
- 
+
 
 ```
 >sudo pacman -S ccache
@@ -336,3 +349,11 @@ Next we need to make sure ccache and makeflags are set at all times  in case we 
 	export PATH="/usr/lib/ccache/bin/:$PATH"
 	export MAKEFLAGS="-j17 -l16"
 ```
+
+Disable root (To still be able to `sudo su` use  `sudo -i` )
+
+```
+# passwd -l root
+```
+
+ install [kdesudo](https://aur.archlinux.org/packages/kdesudo/)AUR, which has the added advantage of tab-completion for the command following. 
