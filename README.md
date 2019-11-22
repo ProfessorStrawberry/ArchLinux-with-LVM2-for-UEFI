@@ -88,7 +88,7 @@ make a backup of mirrorlist and update sync pacman
 ```
 install base system
 ```
->pacstrap /mnt base base-devel linux linux-firmware lvm2 sudo vim git wget zsh networkmanager pacman-contrib reflector htop firefox
+>pacstrap /mnt base base-devel linux linux-firmware linux-headers lvm2 sudo vim git wget zsh zsh-completions networkmanager pacman-contrib reflector htop firefox
 ```
 Generating an fstab file and change relatime on all non-boot partitions to noatime (reduces wear if using an SSD)
 
@@ -96,14 +96,6 @@ Generating an fstab file and change relatime on all non-boot partitions to noati
 >genfstab -p /mnt >> /mnt/etc/fstab
 >vim /mnt/etc/fstab
 ```
-enable the TRIM service for SSD's
-
-```
-systemctl enable fstrim.timer
-```
-
-
-
 enter the installation and change the root password
 
 ```
@@ -128,6 +120,12 @@ create a sudoers.d file
 	##User specification
 	# root and users in group wheel can run anything on any machine as any user
 	MYUSERNAME ALL=(ALL) ALL
+```
+
+enable the TRIM service for SSD's
+
+```
+systemctl enable fstrim.timer
 ```
 
 adjust timezone
@@ -159,8 +157,8 @@ generate hostname and /etc/hosts
 >hostnamectl set-hostname MYHOSTNAME
 >vim /etc/hosts
 	#<ip-address>	<hostname.domain.org>	<hostname>
-	127.0.0.1		localhost.localdomain	localhost
-	::1             localhost.localdomain	localhost
+	127.0.0.1		localhost
+	::1             localhost
 	127.0.1.1		MYHOSTNAME.localdomain	MYHOSTNAME
 ```
 edit /etc/mkinitcpio.conf HOOKS 
@@ -179,7 +177,19 @@ editor 0 prevents to edit bootoptions
 	editor 0
 ```
 edit default arch.conf
-in vim, exit insert mode and type :read ! blkid /dev/sdX2 and enter the UUID in arch.conf ->replace XXXXXXX (to mark somethin press v, to copy y and p or P to paste before or after the cursor)
+in vim, exit insert mode and type :read ! blkid -s UUID -o value /dev/sdX2 and enter the UUID in arch.conf ->replace XXXXXXX
+
+1. Position the cursor where you want to begin cutting. 
+2. Press `v` to select characters, or uppercase `V` to select whole lines, or `Ctrl-v` to select rectangular blocks (use `Ctrl-q` if `Ctrl-v` is mapped to paste). 
+3. Move the cursor to the end of what you want to cut. 
+4. Press `d` to cut (or `y` to copy). 
+5. Move to where you would like to paste. 
+6. Press `P` to paste before the cursor, or `p` to paste after. 
+
+**Copy and paste** is performed with the same steps except for step 4 where you would press `y` instead of `d`: 
+
+- `d` stands for *delete* in Vim, which in other editors is usually called *cut* 
+- `y` stands for *yank* in Vim, which in other editors is usually called *copy* 
 
 ```
 >vim /boot/loader/entries/arch.conf
@@ -201,11 +211,7 @@ Now before we reboot, we are also going to set up our graphics drivers. Reason b
 
 I assume you know which GPU you are using. Arch wiki has done a great job at documenting which drivers you need to install for your hardware.
 
-We are using the dkms module so that we don’t have to reinstall nvidia drivers for every different kernel, if we decide to try another kernel later. To install dkms modules we need the headers for our  kernel:
-
-```
->pacman -S linux-headers
-```
+We are using the dkms module so that we don’t have to reinstall nvidia drivers for every different kernel, if we decide to try another kernel later. To install dkms modules we need the headers for our  kernel (installed via pacstrap linux-headers)
 
 I have an Nvidia GTX 1080 Ti, so my latest drivers will just be nvidia. I also want the multilib drivers and all dependencies required  for the nvidia package, so I will install all of the following: 
 
