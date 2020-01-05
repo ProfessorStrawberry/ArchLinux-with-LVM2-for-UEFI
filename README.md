@@ -2,7 +2,6 @@ Check if internet is avaiable and synchronize time
 
 ```
 >ping -c 3 www.google.com
->timedatectl set-ntp true
 ```
 
 check if UEFI is available
@@ -64,7 +63,7 @@ encryption setup
 
 ```
 >lvcreate -L2G archvg -n swap
->lvcreate -L10G archvg -n root
+>lvcreate -L40G archvg -n root
 >lvcreate -l 100%FREE archvg -n home
 ```
 
@@ -88,7 +87,7 @@ make a backup of mirrorlist and update sync pacman
 ```
 install base system
 ```
->pacstrap /mnt base base-devel linux linux-firmware linux-headers lvm2 sudo vim git wget zsh zsh-completions networkmanager pacman-contrib reflector htop firefox
+>pacstrap /mnt base base-devel linux linux-firmware linux-headers lvm2 sudo acpi vim git wget zsh zsh-completions networkmanager pacman-contrib reflector htop firefox
 ```
 Generating an fstab file and change relatime on all non-boot partitions to noatime (reduces wear if using an SSD)
 
@@ -133,6 +132,7 @@ adjust timezone
 ```
 >ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 >hwclock --systohc --utc
+>timedatectl set-ntp true
 ```
 add multilib to pacman and rank mirrorlist
 ```
@@ -277,7 +277,7 @@ exit and restart into new installation
 Installing X server display manager now install X, which is our display manager.
 
 ```
->sudo pacman -S xorg-server xorg-apps xorg-xinit xorg-twm xorg-xclock xterm ttf-dejavu
+>sudo pacman -S xorg-server xorg-apps xorg-xinit xorg-twm xorg-xclock xterm ttf-dejavu  ttf-liberation
 ```
 
 Now we need to test if X runs. If you get a screen with a few terminals and a clock, it works! You  can type “exit” in the terminals to drop back to the command line.
@@ -292,7 +292,7 @@ Installing a desktop manager
 
 
 ```
->sudo pacman -S plasma sddm
+>sudo pacman -S plasma sddm dolphin konsole kate kcalc
 >sudo systemctl enable sddm.service
 ```
 
@@ -311,10 +311,6 @@ Once you are in KDE, if you use NVIDIA you will want to get rid of some screen t
 	->check Force Composition Pipeline
 	->check Force Full Composition Pipeline
 	->Then click Save to X Configuration File, and quit.
-```
-
-```
-sudo pacman -S acpi
 ```
 
 install trizen (AUR wrapper)
@@ -360,6 +356,23 @@ Disable root (To still be able to `sudo su` use  `sudo -i` )
 
 ```
 # passwd -l root
+
+>sudo pacman -S user-manager
 ```
 
  install [kdesudo](https://aur.archlinux.org/packages/kdesudo/)AUR, which has the added advantage of tab-completion for the command following. 
+
+Bluetooth
+
+Install bluez and bluez-utils and enable/start bluetooth.service
+
+(Might need to add user to lp group)
+
+```
+>sudo pacman -S bluez
+>sudo pacman -S bluez-utils
+>sudo systemctl enable/start bluetooth.service
+```
+
+
+
