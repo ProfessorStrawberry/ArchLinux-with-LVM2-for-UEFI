@@ -1,7 +1,13 @@
-Check if internet is avaiable and synchronize time
+This will probably be split into different files. As I am using btrfs now, but still want to keep ext4 instructions.
+Also rEFInd.
+
+Hooks will be added soon
+
+Check if internet is avaiable and synchronize time with internet
 
 ```
 >ping -c 3 www.google.com
+>timedatectl set-ntp true
 ```
 
 check if UEFI is available
@@ -80,16 +86,12 @@ encryption setup
 >swapon /dev/mapper/archvg-swap
 ```
 
-make a backup of mirrorlist and update sync pacman
+install base system - i am using zsh as default shell
 ```
->cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 >pacman -Sy
-```
-install base system
-```
 >pacstrap /mnt base base-devel linux linux-firmware linux-headers lvm2 sudo acpi vim git wget zsh zsh-completions networkmanager pacman-contrib reflector htop firefox
 ```
-Generating an fstab file and change relatime on all non-boot partitions to noatime (reduces wear if using an SSD)
+Generating an fstab file and change relatime on all non-boot partitions to noatime and add nodiratime like noatime,nodiratime (reduces wear if using an SSD)
 
 ```
 >genfstab -p /mnt >> /mnt/etc/fstab
@@ -127,20 +129,24 @@ enable the TRIM service for SSD's
 systemctl enable fstrim.timer
 ```
 
+
 adjust timezone
 
 ```
 >ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 >hwclock --systohc --utc
->timedatectl set-ntp true
+
 ```
-add multilib to pacman and rank mirrorlist
+add multilib to pacman
 ```
 >vim /etc/pacman.conf ->uncomment
 	[multilib]
 	Include = /etc/pacman.d/mirrorlist
 >pacman -Sy
-
+```
+make a backup of mirrorlist and make a rank for mirrorlist adjust to your location
+```
+>cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 >reflector -c "Germany" -f 12 -l 12 --verbose --save /etc/pacman.d/mirrorlist
 ```
 language settings
@@ -155,11 +161,29 @@ language settings
 generate hostname and /etc/hosts
 ```
 >hostnamectl set-hostname MYHOSTNAME
+>echo MYHOSTNAME > /etc/hostname
 >vim /etc/hosts
-	#<ip-address>	<hostname.domain.org>	<hostname>
-	127.0.0.1		localhost
-	::1             localhost
-	127.0.1.1		MYHOSTNAME.localdomain	MYHOSTNAME
+	# Static table lookup for hostnames.
+	# See hosts(5) for details.
+	#
+	# <ip-address>  <hostname.domain.org>   <hostname>
+	##
+	## The following lines are desirable for IPv4 capable hosts
+	127.0.0.1       localhost
+	##192.168.1.10   foo.mydomain.org       foo
+	##192.168.1.13   bar.mydomain.org       bar
+	##146.82.138.7   master.debian.org      master
+	##209.237.226.90 www.opensource.org
+	### sourceforge adjustment for germany
+	213.203.218.122 dl.sourceforge.net
+	## 127.0.1.1 is often used for the FQDN of the machine
+	127.0.1.1       MYHOSTNAME.localdomain 	MYHOSTNAME
+	#
+	## The following lines are desirable for IPv6 capable hosts
+	::1             localhost ip6-localhost ip6-loopback
+	ff02::1         ip6-allnodes
+	ff02::2         ip6-allrouters
+
 ```
 edit /etc/mkinitcpio.conf HOOKS 
 ```
@@ -177,6 +201,15 @@ editor 0 prevents to edit bootoptions
 	editor 0
 ```
 edit default arch.conf
+
+
+```
+>vim /boot/loader/entries/arch.conf
+	title	Arch Linux (ENCRYPTED)
+	linux 	/vmlinuz-linux
+	initrd 	/initramfs-linux.img
+	options cryptdevice=UUID=XXXXXXX:archlv root=/dev/mapper/archvg-root quiet rw
+```
 in vim, exit insert mode and type :read ! blkid -s UUID -o value /dev/sdX2 and enter the UUID in arch.conf ->replace XXXXXXX
 
 1. Position the cursor where you want to begin cutting. 
@@ -191,13 +224,6 @@ in vim, exit insert mode and type :read ! blkid -s UUID -o value /dev/sdX2 and e
 - `d` stands for *delete* in Vim, which in other editors is usually called *cut* 
 - `y` stands for *yank* in Vim, which in other editors is usually called *copy* 
 
-```
->vim /boot/loader/entries/arch.conf
-	title	Arch Linux (ENCRYPTED)
-	linux 	/vmlinuz-linux
-	initrd 	/initramfs-linux.img
-	options cryptdevice=UUID=XXXXXXX:archlv root=/dev/mapper/archvg-root quiet rw
-```
 install intel-ucode and add it to arch.conf
 ```
 >pacman -S intel-ucode
@@ -244,7 +270,7 @@ Lastly, we need to make a pacman hook, so that any time the kernel is  updated, 
 	Operation=Upgrade
 	Operation=Remove
 	Type=Package
-	Target=nvidia
+	Target=nvidia-dkms
 	Target=linux
 	# Change the linux part above and in the Exec line if a different kernel is used
 
@@ -300,7 +326,7 @@ After this, you should be able to reboot and safely log into your system!
 
 # POST INSTALLATION TWEAKS (IMPORTANT – YOU WILL WANT TO DO THESE):
 
-Once you are in KDE, if you use NVIDIA you will want to get rid of some screen tearing. Open a terminal, run:
+Once you are in KDE, if you use NVIDIA you will want to get rid of some screen tearing (only if affected). Open a terminal, run:
 
 ```
 >sudo nvidia-xconfig
@@ -313,15 +339,14 @@ Once you are in KDE, if you use NVIDIA you will want to get rid of some screen t
 	->Then click Save to X Configuration File, and quit.
 ```
 
-install trizen (AUR wrapper)
+install trizen or any AUR wrapper
+What the AUR is, is a collection of USER created packages for Arch  Linux users to pull from. These can be game installers, programs  compiled from git repositories, beta drivers, or other programs that  aren’t included in Arch’s main repos. That being said, it is VERY smart  to LOOK at the PKGBUILD of a package before installing it, to see what  it does, where it installs things, and if the auther has added any notes about installing it. If you find a package on the AUR you want to  install, you use the AUR wrapper the same way as pacman. AUR packages can be found  here: https://aur.archlinux.org/
 
 ```
 git clone https://aur.archlinux.org/trizen.git
 cd trizen
 makepkg -si
 ```
-
-What the AUR is, is a collection of USER created packages for Arch  Linux users to pull from. These can be game installers, programs  compiled from git repositories, beta drivers, or other programs that  aren’t included in Arch’s main repos. That being said, it is VERY smart  to LOOK at the PKGBUILD of a package before installing it, to see what  it does, where it installs things, and if the auther has added any notes about installing it. If you find a package on the AUR you want to  install, you use yay the same way as pacman. AUR packages can be found  here: https://aur.archlinux.org/
 
 Many AUR packages compile from source, so you will want to speed up  compile times. I have a few small tips for that as well. First, you will need to know the amount of cores your processor has, and will need to  know if your processor supports Hyperthreading or SMT. For example, if  you own an i7 4770k, you have 4 cores and support hyperthreading,  essentially giving you 8 cores. Ryzen 1700x 8 cores, 16 threads – counts as 16 cores. If your processor does NOT support SMT/hyperthreading,  such as an AMD FX-8350, you would just need to know the core number.  FX-8350 has 8 cores.
 
@@ -339,17 +364,17 @@ Next lets enable ccache and set our makeflags for makepkg. Find BUILDENV= remove
 ```
 >sudo vim /etc/makepkg.conf
 	BUILDENV=(!distcc color ccache check !sign)
-	MAKEFLAGS="-j17 -l16"
+	MAKEFLAGS="-j13 -l12"
 ```
 
-Replace 17 with your number of cores +1, and 16 with your number of  cores. At the time of this edit, I currently am using a Ryzen 1700x, which is why I use -j17 -l16.
+Replace 13 with your number of cores +1, and 12 with your number of  cores. At the time of this edit, I currently am using a Intel Core i7 8700k, which is why I use -j13 -l12.
 
 Next we need to make sure ccache and makeflags are set at all times  in case we compile something without using a package manager:
 
 ```
 >vim ~/.zshrc
 	export PATH="/usr/lib/ccache/bin/:$PATH"
-	export MAKEFLAGS="-j17 -l16"
+	export MAKEFLAGS="-j13 -l12"
 ```
 
 Disable root (To still be able to `sudo su` use  `sudo -i` )
