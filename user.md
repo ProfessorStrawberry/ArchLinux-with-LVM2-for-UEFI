@@ -63,4 +63,4 @@ sudo pacman -S user-manager
 
 ---
 
-Make the system userfriendly with [KDE.](kde.md).
+## Make the system userfriendly with [KDE.](kde.md).
