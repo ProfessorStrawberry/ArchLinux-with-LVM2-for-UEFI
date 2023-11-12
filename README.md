@@ -1,4 +1,4 @@
-# Install instructions for Arch on UEFI with LVM2 encryption, KDE and Nvidia driver
+# Install instructions for Arch on UEFI with LVM2 encryption, KDE and NVIDIA driver
 
 ## The install instructions are now split into different files. I am using Btrfs now, but there are also Ext4 instructions
 
