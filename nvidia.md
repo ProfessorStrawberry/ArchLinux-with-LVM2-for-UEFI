@@ -21,19 +21,13 @@ MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
 
 **Don't forget to rebuild initramfs with `sudo mkinitcpio -P`**
 
-We also need to make sure these are loaded during boot, so next we do this:
+We also need to make sure these are loaded during boot, so next we do: `sudo nvim /boot/loader/entries/arch.conf`
 
-```text
-sudo nvim /boot/loader/entries/arch.conf
-options cryptdevice=UUID=XXXXXXX:archlv root=/dev/mapper/archvg-root quiet rw nvidia_drm.modeset=1 nvidia_drm.fbdev=1
-```
+`options cryptdevice=UUID=XXXXXXX:archlv root=/dev/mapper/archvg-root quiet rw nvidia_drm.modeset=1 nvidia_drm.fbdev=1`
 
-It is also helpful to add the kernel modules
+It is also helpful to add the kernel modules: `sudo nvim /etc/modprobe.d/nvidia.conf`
 
-```text
-sudo nvim /etc/modprobe.d/nvidia.conf
-options nvidia_drm modeset=1 fbdev=1 hdmi_deepcolor=1
-```
+`options nvidia_drm modeset=1 fbdev=1 hdmi_deepcolor=1`
 
 ##### Beta driver
 Install the `nvidia-beta-dkms` or `nvidia-open-beta-dkms` (if your card is supported by the open nvidia modules). Also Install `xorg-xwayland-git`, `nvidia-utils-beta` and `libva-nvidia-driver-git`.
@@ -42,10 +36,9 @@ Make sure you have `modset=1` AND `fbdev=1` in your `kernal params`. With the be
 
 Lastly, we need to make a pacman hook, so that any time the kernel is updated, it automatically adds the nvidia module. This will save us a LOT of headache later on.
 Make sure the Target package set in this hook is the one you have installed in steps above (e.g. nvidia, nvidia-dkms, nvidia-lts or nvidia-ck-something).
+`sudo mkdir /etc/pacman.d/hooks && sudo nvim /etc/pacman.d/hooks/nvidia.hook`
 
 ```text
-mkdir /etc/pacman.d/hooks
-nvim /etc/pacman.d/hooks/nvidia.hook
 [Trigger]
 Operation=Install
 Operation=Upgrade
