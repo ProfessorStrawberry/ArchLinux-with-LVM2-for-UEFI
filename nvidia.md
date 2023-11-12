@@ -19,7 +19,7 @@ nvim /etc/mkinitcpio.conf
 MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
 ```
 
-##### Don't forget to rebuild initramfs with `sudo mkinitcpio -P`
+**Don't forget to rebuild initramfs with `sudo mkinitcpio -P`**
 
 We also need to make sure these are loaded during boot, so next we do this:
 
