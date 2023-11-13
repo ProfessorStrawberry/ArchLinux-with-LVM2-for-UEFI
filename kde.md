@@ -5,7 +5,7 @@
 Install the plasma-meta meta-package: `sudo pacman -S plasma-meta`
 To enable support for Wayland in Plasma, also install the plasma-wayland-session package: `sudo pacman -S plasma-wayland-session`
 Enable the sddm service with: `sudo systemctl enable sddm.service`
-For basic functionality: `sudo pacman -S dolphin konsole kate kcalc ttf-dejavu ttf-liberation xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr`
+For basic functionality: `sudo pacman -S dolphin konsole kate kcalc ttf-dejavu ttf-liberation xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr packagekit-qt5 kdialog`
 
 ##### Restart the system
 
