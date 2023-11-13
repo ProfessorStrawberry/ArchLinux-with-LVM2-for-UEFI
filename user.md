@@ -58,7 +58,6 @@ source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring
 
 ```text
 sudo passwd -l root
-sudo pacman -S user-manager
 ```
 
 ---
